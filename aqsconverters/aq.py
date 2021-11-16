@@ -59,7 +59,7 @@ def autolog():
 
         ## double slashes in case the parameter is passed in a non conventional way,
         ## so that it is known in which specialized case is used
-        list_args = inspect.getfullargspec(eval(aq_module_name + "." + aq_query_type)).args
+        list_args_query = inspect.getfullargspec(eval(aq_module_name + "." + aq_query_type)).args
         if aq_query_type == "get_images":
 
             astro_image_name = ""
@@ -92,7 +92,8 @@ def autolog():
                         radius_arg_str = str(radius_arg)
                     radius_obj_id_suffix = hashlib.sha256(radius_arg_str.encode()).hexdigest()
                     astro_image_suffix += '_' + radius_arg_str
-                    radius_obj = Angle(_id="https://odahub.io/ontology#Angle"
+                    radius_obj = Angle(_id="https://odahub.io/ontology/" + aq_query_type
+                                                + "/" + aq_module_name + "#Angle"
                                            + radius_obj_id_suffix,
                                        name=radius_arg_str)
                     astro_image_name += '_' + radius_obj.name
@@ -103,7 +104,8 @@ def autolog():
                 pixels = kwargs['pixels']
                 if pixels is not None:
                     pixels_obj_id_suffix = hashlib.sha256(str(pixels).encode()).hexdigest()
-                    pixels_obj = Pixels(_id="https://odahub.io/ontology#Pixels"
+                    pixels_obj = Pixels(_id="https://odahub.io/ontology/"  + aq_query_type
+                                                + "/" + aq_module_name +  "#Pixels"
                                            + pixels_obj_id_suffix,
                                        name=str(pixels))
                     astro_image_name += '_' + pixels_obj.name
