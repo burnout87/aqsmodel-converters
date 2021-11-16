@@ -39,32 +39,36 @@ def autolog():
     import astroquery.query
     from astropy import coordinates
     import hashlib
+    import inspect
 
     def produce_annotation(self, aq_query_type, *args, **kwargs):
-        aq_module_name = self.__class__.__name__    
+        aq_module_name = self.__class__.__name__
 
-        print(f"\033[33mpatched {aq_query_type} with:\033[0m", args, kwargs)    
-        print("\033[33mwriting annotation here:\033[0m", aq_module_name, args, kwargs)    
+        print(f"\033[33mpatched {aq_query_type} with:\033[0m", args, kwargs)
+        print("\033[33mwriting annotation here:\033[0m", aq_module_name, args, kwargs)
 
         run_id = uuid1()
         run = Run(_id=run_id,
                   name=aq_query_type + "_" + str(run_id))
-        
+
         aq_module = AstroqueryModule(_id="https://odahub.io/ontology#AQModule" + aq_module_name,
                                      name=aq_module_name)
 
         #run.input_values = [AstrophysicalObject(_id=aq_module_name, name=aq_module_name)]
         run.isUsing = [aq_module]
 
+        ## double slashes in case the parameter is passed in a non conventional way,
+        ## so that it is known in which specialized case is used
+        list_args = inspect.getfullargspec(eval(aq_module_name + "." + aq_query_type)).args
         if aq_query_type == "get_images":
+
             astro_image_name = ""
             astro_image_suffix = ""
 
-            # coordinates
-            # assumption to use the first positional argument
+            # coordinate, assumption to use the first positional argument, as stated in the API reference
             coordinates_arg = args[0]
-            if coordinates_arg is None:
-                coordinates_arg = kwargs['coordinates']
+            # if coordinates_arg is None:
+            #     coordinates_arg = kwargs['coordinates']
 
             if isinstance(coordinates_arg, coordinates.SkyCoord):
                 coordinates_arg_str = coordinates_arg.to_string()
@@ -110,8 +114,6 @@ def autolog():
             if 'image_band' in kwargs:
                 image_band = kwargs['image_band']
                 if image_band is not None:
-                    ## double slashes in case the parameter is passed in a non conventional way,
-                    ## so that it is known in which specialized case is used
                     image_band_obj_id_suffix = hashlib.sha256(image_band.encode()).hexdigest()
                     image_band_obj = ImageBand(_id="https://odahub.io/ontology/" + aq_query_type
                                                 + "/" + aq_module_name + "#ImageBand"
@@ -146,15 +148,15 @@ def autolog():
             run.isRequestingAstroObject = [obj]
 
         if aq_query_type == "query_region":
-            if 'coordinates' in kwargs:
-                coordinates_arg = kwargs['coordinates']
-            else:
-                coordinates_arg = args[0]
-
+            # coordinate, assumption to use the first positional argument, as stated in the API reference
+            coordinates_arg = args[0]
             skycoord_obj_id_suffix = hashlib.sha256(coordinates_arg.to_string().encode()).hexdigest()
             skycoord_obj = SkyCoordinates(_id="https://odahub.io/ontology#SkyCoordinates"
                                               + skycoord_obj_id_suffix,
                                           name=coordinates_arg.to_string())
+            # if coordinates_arg is None and 'coordinates' in kwargs:
+            #     coordinates_arg = kwargs['coordinates']
+
 
             radius_arg = None
             if 'radius' in kwargs:
