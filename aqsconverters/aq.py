@@ -8,6 +8,7 @@ from .models import (
     SkyCoordinates,
     Angle,
     Pixels,
+    ImageBand,
     Run,
     RunSchema,
 )
@@ -60,20 +61,21 @@ def autolog():
             astro_image_suffix = ""
 
             # coordinates
-            skycoord_obj = None
-            if 'coordinates' in kwargs:
+            # assumption to use the first positional argument
+            coordinates_arg = args[0]
+            if coordinates_arg is None:
                 coordinates_arg = kwargs['coordinates']
-                if coordinates_arg is not None:
-                    if isinstance(coordinates_arg, coordinates.SkyCoord):
-                        coordinates_arg_str = coordinates_arg.to_string()
-                    else:
-                        coordinates_arg_str = str(coordinates_arg)
-                    skycoord_obj_id_suffix = hashlib.sha256(coordinates_arg_str.encode()).hexdigest()
-                    astro_image_suffix += coordinates_arg_str
-                    skycoord_obj = SkyCoordinates(_id="https://odahub.io/ontology#SkyCoordinates"
-                                                      + skycoord_obj_id_suffix,
-                                                  name=coordinates_arg_str)
-                    astro_image_name += skycoord_obj.name
+
+            if isinstance(coordinates_arg, coordinates.SkyCoord):
+                coordinates_arg_str = coordinates_arg.to_string()
+            else:
+                coordinates_arg_str = str(coordinates_arg)
+            skycoord_obj_id_suffix = hashlib.sha256(coordinates_arg_str.encode()).hexdigest()
+            astro_image_suffix += coordinates_arg_str
+            skycoord_obj = SkyCoordinates(_id="https://odahub.io/ontology#SkyCoordinates"
+                                                  + skycoord_obj_id_suffix,
+                                              name=coordinates_arg_str)
+            astro_image_name += skycoord_obj.name
 
             # radius
             radius_obj = None
@@ -108,8 +110,11 @@ def autolog():
             if 'image_band' in kwargs:
                 image_band = kwargs['image_band']
                 if image_band is not None:
+                    ## double slashes in case the parameter is passed in a non conventional way,
+                    ## so that it is known in which specialized case is used
                     image_band_obj_id_suffix = hashlib.sha256(image_band.encode()).hexdigest()
-                    image_band_obj = Pixels(_id="https://odahub.io/ontology#ImageBand"
+                    image_band_obj = ImageBand(_id="https://odahub.io/ontology/" + aq_query_type
+                                                + "/" + aq_module_name + "#ImageBand"
                                            + image_band_obj_id_suffix,
                                        name=image_band)
                     astro_image_name += '_' + image_band_obj.name
