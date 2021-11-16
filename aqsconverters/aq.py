@@ -66,9 +66,10 @@ def autolog():
             astro_image_suffix = ""
 
             # coordinate, assumption to use the first positional argument, as stated in the API reference
-            coordinates_arg = args[0]
-            # if coordinates_arg is None:
-            #     coordinates_arg = kwargs['coordinates']
+            if len(args) > 0:
+                coordinates_arg = args[0]
+            else:
+                coordinates_arg = kwargs['coordinates']
 
             if isinstance(coordinates_arg, coordinates.SkyCoord):
                 coordinates_arg_str = coordinates_arg.to_string()
@@ -151,13 +152,15 @@ def autolog():
 
         if aq_query_type == "query_region":
             # coordinate, assumption to use the first positional argument, as stated in the API reference
-            coordinates_arg = args[0]
+            # otherwise search it as a kw arg
+            if len(args) > 0:
+                coordinates_arg = args[0]
+            else:
+                coordinates_arg = kwargs['coordinates']
             skycoord_obj_id_suffix = hashlib.sha256(coordinates_arg.to_string().encode()).hexdigest()
             skycoord_obj = SkyCoordinates(_id="https://odahub.io/ontology#SkyCoordinates"
                                               + skycoord_obj_id_suffix,
                                           name=coordinates_arg.to_string())
-            # if coordinates_arg is None and 'coordinates' in kwargs:
-            #     coordinates_arg = kwargs['coordinates']
 
 
             radius_arg = None
