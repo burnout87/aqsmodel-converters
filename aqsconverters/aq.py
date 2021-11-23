@@ -82,6 +82,22 @@ def autolog():
                                               name=coordinates_arg_str)
             astro_image_name += skycoord_obj.name
 
+            # # starting from the third, since the first is self and the second is coordinate
+            # for arg in list_args_query[2:]:
+            #     if arg in kwargs:
+            #         arg_val = kwargs[arg]
+            #         if isinstance(arg_val, coordinates.Angle):
+            #             arg_val = arg_val.to_string()
+            #         else:
+            #             arg_val = str(arg_val)
+            #         obj_id_suffix = hashlib.sha256(arg_val.encode()).hexdigest()
+            #         astro_image_suffix += '_' + arg_val
+            #         radius_obj = Angle(_id="https://odahub.io/ontology/" + aq_query_type
+            #                                + "/" + aq_module_name + "#Angle"
+            #                                + radius_obj_id_suffix,
+            #                            name=radius_arg_str)
+            #         astro_image_name += '_' + radius_obj.name
+
             # radius
             radius_obj = None
             if 'radius' in kwargs:
@@ -133,14 +149,16 @@ def autolog():
 
             astro_image_obj.isUsingSkyCoordinates = [skycoord_obj]
 
+            astro_image_obj.isUsing = []
+
             if radius_obj is not None:
-                astro_image_obj.isUsingRadius = [radius_obj]
+                astro_image_obj.isUsing.append(radius_obj)
 
             if image_band_obj is not None:
-                astro_image_obj.isUsingImageBand = [image_band_obj]
+                astro_image_obj.isUsing.append(image_band_obj)
 
             if pixels_obj is not None:
-                astro_image_obj.isUsingPixels = [pixels_obj]
+                astro_image_obj.isUsing.append(pixels_obj)
 
             run.isRequestingAstroImage = [astro_image_obj]
 
@@ -161,7 +179,6 @@ def autolog():
             skycoord_obj = SkyCoordinates(_id="https://odahub.io/ontology#SkyCoordinates"
                                               + skycoord_obj_id_suffix,
                                           name=coordinates_arg.to_string())
-
 
             radius_arg = None
             if 'radius' in kwargs:
